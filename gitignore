@@ -1,0 +1,56 @@
+# === Операционные системы ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# === IDE и редакторы ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# === Node.js (если добавите npm) ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# === Временные файлы ===
+*.tmp
+*.temp
+*.log
+*.cache
+.cache/
+dist/
+build/
+
+# === Бэкапы приложения ===
+pm_backup_*.json
+*.backup
+
+# === Личные заметки ===
+NOTES.md
+TODO.md
+*.local
+scratch.*
+
+# === Секреты ===
+.env
+.env.local
+.env.*.local
+secrets.json
+credentials.json
