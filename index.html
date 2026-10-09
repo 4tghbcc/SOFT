@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Веб-приложение для управления проектами и задачами. ВКР Черепанов В.П., Синергия 2026.">
+    <meta name="author" content="Черепанов Владислав Павлович">
+    <meta name="keywords" content="управление проектами, задачи, веб-приложение, JavaScript, HTML5">
+    <title>Управление проектами и задачами</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+    <style>
+        /* ================================================================
+           ГЛОБАЛЬНЫЕ СТИЛИ
+           ================================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #1e293b;
+            padding: 24px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -12px rgba(0, 20, 50, 0.15);
+            padding: 32px 28px;
+            transition: all 0.2s;
+        }
+
+        /* ================================================================
+           ЗАГОЛОВОК
+           ================================================================ */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px;
+            border-bottom: 2px solid #e9edf2;
+            padding-bottom: 18px;
+        }
+
+        .app-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(145deg, #0b3b5c, #1a6b8a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.3px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ================================================================
+           КНОПКИ
+           ================================================================ */
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: #1a6b8a;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #0f5470;
+        }
+
+        .btn-success {
+            background: #1e8b5e;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #15734b;
+        }
+
+        .btn-danger {
+            background: #c73b3b;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #a82e2e;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #1a6b8a;
+            border: 1.5px solid #1a6b8a;
+        }
+        .btn-outline:hover {
+            background: #e6f0f5;
+        }
+
+        .btn-warning {
+            background: #d99c2b;
+            color: #fff;
+        }
+        .btn-warning:hover {
+            background: #b8831f;
+        }
+
+        .btn-sm {
+            padding: 4px 14px;
+            font-size: 12px;
+        }
+
+        /* ================================================================
+           СТАТИСТИКА
+           ================================================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 14px;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 28px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0b3b5c;
+        }
+
+        .stat-item .label {
+            font-size: 13px;
+            color: #556b82;
+            font-weight: 500;
+        }
+
+        /* ================================================================
+           ОСНОВНАЯ СЕТКА
+           ================================================================ */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 28px;
+        }
+
+        @media (max-width: 760px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* ================================================================
+           ПАНЕЛЬ ПРОЕКТОВ
+           ================================================================ */
+        .projects-panel {
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 18px 16px 20px;
+            border: 1px solid #e2e8f0;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .projects-panel h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px 0;
+        }
+
+        .project-item {
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.12s;
+            background: #ffffff;
+            border: 1px solid transparent;
+        }
+
+        .project-item:hover {
+            background: #eef4f9;
+        }
+
+        .project-item.active {
+            background: #dce8f2;
+            border-color: #1a6b8a;
+            box-shadow: 0 2px 6px rgba(26, 107, 138, 0.08);
+        }
+
+        .project-item .del-proj {
+            background: none;
+            border: none;
+            color: #a0b8cc;
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.1s;
+            line-height: 1;
+        }
+
+        .project-item .del-proj:hover {
+            color: #c73b3b;
+        }
+
+        .add-project-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .add-project-form input {
+            flex: 1;
+            padding: 8px 14px;
+            border: 1.5px solid #d0d9e3;
+            border-radius: 40px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.15s;
+        }
+
+        .add-project-form input:focus {
+            border-color: #1a6b8a;
+        }
+
+        /* ================================================================
+           СПИСОК ЗАДАЧ
+           ================================================================ */
+        .tasks-panel {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 0 4px 4px 4px;
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding: 0 4px;
+        }
+
+        .tasks-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0b3b5c;
+        }
+
+        .tasks-header .project-name {
+            font-weight: 400;
+            color: #556b82;
+            font-size: 16px;
+        }
+
+        .add-task-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+            background: #f8fafc;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .add-task-form input[type="text"] {
+            flex: 1;
+            min-width: 180px;
+            padding: 8px 16px;
+            border: 1.5px solid #d0d9e3;
+            border-radius: 40px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.15s;
+        }
+
+        .add-task-form input[type="text"]:focus {
+            border-color: #1a6b8a;
+        }
+
+        .add-task-form select {
+            padding: 8px 16px;
+            border: 1.5px solid #d0d9e3;
+            border-radius: 40px;
+            font-size: 14px;
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .add-task-form .btn {
+            flex-shrink: 0;
+        }
+
+        /* ================================================================
+           КАРТОЧКА ЗАДАЧИ
+           ================================================================ */
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            background: #fbfdff;
+            border: 1px solid #e9edf2;
+            transition: background 0.12s, border-color 0.12s;
+        }
+
+        .task-item:hover {
+            background: #f6faff;
+            border-color: #cbd8e5;
+        }
+
+        .task-item.done {
+            opacity: 0.7;
+            background: #f2f5f8;
+        }
+
+        .task-item.done .task-text {
+            text-decoration: line-through;
+            color: #6b7e94;
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .task-check {
+            width: 20px;
+            height: 20px;
+            accent-color: #1a6b8a;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-text {
+            font-size: 15px;
+            font-weight: 500;
+            word-break: break-word;
+            flex: 1;
+        }
+
+        .priority-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 12px;
+            border-radius: 40px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            flex-shrink: 0;
+        }
+
+        .priority-high {
+            background: #fee9e7;
+            color: #b33a34;
+        }
+        .priority-medium {
+            background: #fff0d9;
+            color: #b57c1a;
+        }
+        .priority-low {
+            background: #e3edf5;
+            color: #2b6c8a;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .task-actions .btn {
+            padding: 2px 12px;
+            font-size: 12px;
+        }
+
+        .empty-tasks {
+            text-align: center;
+            color: #889fb3;
+            padding: 40px 10px;
+            font-size: 15px;
+        }
+
+        /* ================================================================
+           АДАПТИВНОСТЬ
+           ================================================================ */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 16px;
+            }
+            .add-task-form {
+                flex-direction: column;
+            }
+            .add-task-form input[type="text"] {
+                min-width: auto;
+            }
+            .task-item {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .task-actions {
+                margin-left: 0;
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+    <!-- ============================================================
+         ШАПКА
+         ============================================================ -->
+    <header class="app-header">
+        <h1>📋 Управление проектами</h1>
+        <div class="header-actions">
+            <button class="btn btn-outline btn-sm" id="exportBtn">⬇ Экспорт</button>
+            <button class="btn btn-outline btn-sm" id="importBtn">⬆ Импорт</button>
+            <input type="file" id="fileInput" accept=".json" style="display:none">
+        </div>
+    </header>
+
+    <!-- ============================================================
+         СТАТИСТИКА
+         ============================================================ -->
+    <div class="stats-grid" id="statsContainer">
+        <div class="stat-item"><span class="number" id="statProjects">0</span><div class="label">Проектов</div></div>
+        <div class="stat-item"><span class="number" id="statTotal">0</span><div class="label">Всего задач</div></div>
+        <div class="stat-item"><span class="number" id="statDone">0</span><div class="label">Выполнено</div></div>
+        <div class="stat-item"><span class="number" id="statActive">0</span><div class="label">Активных</div></div>
+    </div>
+
+    <!-- ============================================================
+         ОСНОВНАЯ СЕТКА
+         ============================================================ -->
+    <div class="main-grid">
+        <!-- Левая панель: проекты -->
+        <aside class="projects-panel">
+            <h3>
+                <span>📁 Проекты</span>
+                <span id="projectCount" style="font-weight:400;font-size:13px;color:#6b7e94;">0</span>
+            </h3>
+            <ul class="project-list" id="projectList"></ul>
+            <div class="add-project-form">
+                <input type="text" id="projectInput" placeholder="Название проекта..." maxlength="40">
+                <button class="btn btn-primary btn-sm" id="addProjectBtn">+</button>
+            </div>
+        </aside>
+
+        <!-- Правая панель: задачи -->
+        <section class="tasks-panel">
+            <div class="tasks-header">
+                <h2 id="currentProjectTitle">Задачи <span class="project-name">— выберите проект</span></h2>
+            </div>
+
+            <!-- Форма добавления задачи -->
+            <div class="add-task-form">
+                <input type="text" id="taskInput" placeholder="Текст задачи..." maxlength="100">
+                <select id="prioritySelect">
+                    <option value="high">🔴 Высокий</option>
+                    <option value="medium" selected>🟡 Средний</option>
+                    <option value="low">🟢 Низкий</option>
+                </select>
+                <button class="btn btn-primary" id="addTaskBtn">Добавить</button>
+            </div>
+
+            <!-- Список задач -->
+            <ul class="task-list" id="taskList"></ul>
+            <div id="emptyMessage" class="empty-tasks">Нет задач в этом проекте</div>
+        </section>
+    </div>
+</div>
+
+<script>
+    // ================================================================
+    //  КОНСТАНТЫ И СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+    // ================================================================
+
+    /** Ключ для хранения данных в localStorage */
+    const STORAGE_KEY = 'pmAppState';
+
+    /** Демо-данные для первоначальной загрузки */
+    const defaultState = {
+        projects: [
+            {
+                id: 1,
+                name: 'Внедрение CRM',
+                tasks: [
+                    { id: 101, text: 'Проанализировать требования', done: true, priority: 'high' },
+                    { id: 102, text: 'Настроить интеграцию с 1С', done: false, priority: 'high' },
+                    { id: 103, text: 'Обучить менеджеров', done: false, priority: 'medium' },
+                ]
+            },
+            {
+                id: 2,
+                name: 'Разработка веб-приложения',
+                tasks: [
+                    { id: 201, text: 'Спроектировать базу данных', done: true, priority: 'high' },
+                    { id: 202, text: 'Разработать API', done: false, priority: 'high' },
+                    { id: 203, text: 'Написать фронтенд', done: false, priority: 'medium' },
+                    { id: 204, text: 'Провести тестирование', done: false, priority: 'low' },
+                ]
+            }
+        ],
+        currentProjectId: 1
+    };
+
+    /** Глобальное состояние приложения */
+    let state = loadState();
+
+    // ================================================================
+    //  РАБОТА С ХРАНИЛИЩЕМ
+    // ================================================================
+
+    /**
+     * Загружает состояние из localStorage с полной валидацией.
+     * При ошибке или отсутствии данных возвращает копию defaultState.
+     */
+    function loadState() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return JSON.parse(JSON.stringify(defaultState));
+
+            const parsed = JSON.parse(raw);
+
+            // Проверка базовой структуры
+            if (!parsed.projects || !Array.isArray(parsed.projects)) {
+                return JSON.parse(JSON.stringify(defaultState));
+            }
+
+            // Нормализация каждого проекта
+            parsed.projects.forEach(p => {
+                if (!p.tasks || !Array.isArray(p.tasks)) p.tasks = [];
+                if (!p.id) p.id = generateId();
+
+                p.tasks.forEach(t => {
+                    if (typeof t.done !== 'boolean') t.done = false;
+                    if (!['high', 'medium', 'low'].includes(t.priority)) t.priority = 'medium';
+                    if (!t.id) t.id = generateId();
+                    if (typeof t.text !== 'string') t.text = String(t.text || '');
+                });
+            });
+
+            // Проверка корректности currentProjectId
+            const exists = parsed.projects.some(p => p.id === parsed.currentProjectId);
+            if (!exists && parsed.projects.length > 0) {
+                parsed.currentProjectId = parsed.projects[0].id;
+            }
+
+            return parsed;
+        } catch (e) {
+            console.error('Ошибка загрузки состояния:', e);
+            return JSON.parse(JSON.stringify(defaultState));
+        }
+    }
+
+    /**
+     * Сохраняет текущее состояние в localStorage.
+     */
+    function saveState() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+            console.error('Ошибка сохранения состояния:', e);
+        }
+    }
+
+    /**
+     * Генерирует уникальный идентификатор на основе времени + случайного числа.
+     */
+    function generateId() {
+        return Date.now() + Math.floor(Math.random() * 10000);
+    }
+
+    // ================================================================
+    //  ПОЛУЧЕНИЕ ДАННЫХ
+    // ================================================================
+
+    /**
+     * Возвращает текущий выбранный проект или null.
+     */
+    function getCurrentProject() {
+        return state.projects.find(p => p.id === state.currentProjectId) || null;
+    }
+
+    /**
+     * Возвращает массив задач текущего проекта.
+     */
+    function getTasksForCurrentProject() {
+        const proj = getCurrentProject();
+        return proj ? proj.tasks : [];
+    }
+
+    // ================================================================
+    //  РЕНДЕРИНГ ИНТЕРФЕЙСА
+    // ================================================================
+
+    /**
+     * Полный рендеринг: проекты, задачи, статистика, заголовок.
+     * Автоматически сохраняет состояние.
+     */
+    function renderAll() {
+        renderProjects();
+        renderTasks();
+        renderStats();
+        updateProjectTitle();
+        saveState();
+    }
+
+    // --- Рендеринг списка проектов ---
+    function renderProjects() {
+        const list = document.getElementById('projectList');
+        list.innerHTML = '';
+
+        state.projects.forEach(proj => {
+            const li = document.createElement('li');
+            li.className = 'project-item' + (proj.id === state.currentProjectId ? ' active' : '');
+
+            // Формируем содержимое через DOM API (безопасно)
+            const span = document.createElement('span');
+            span.textContent = proj.name;
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'del-proj';
+            delBtn.dataset.id = proj.id;
+            delBtn.title = 'Удалить проект';
+            delBtn.textContent = '✕';
+
+            li.appendChild(span);
+            li.appendChild(delBtn);
+
+            // Переключение проекта
+            li.addEventListener('click', (e) => {
+                if (e.target.closest('.del-proj')) return;
+                state.currentProjectId = proj.id;
+                renderAll();
+            });
+
+            // Удаление проекта
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (state.projects.length <= 1) {
+                    alert('Нельзя удалить последний проект.');
+                    return;
+                }
+                if (!confirm(`Удалить проект "${proj.name}" со всеми задачами?`)) return;
+
+                state.projects = state.projects.filter(p => p.id !== proj.id);
+                if (state.currentProjectId === proj.id) {
+                    state.currentProjectId = state.projects[0].id;
+                }
+                renderAll();
+            });
+
+            list.appendChild(li);
+        });
+
+        document.getElementById('projectCount').textContent = state.projects.length;
+    }
+
+    // --- Рендеринг списка задач ---
+    function renderTasks() {
+        const container = document.getElementById('taskList');
+        const emptyMsg = document.getElementById('emptyMessage');
+        const tasks = getTasksForCurrentProject();
+
+        container.innerHTML = '';
+
+        if (!tasks || tasks.length === 0) {
+            emptyMsg.style.display = 'block';
+            return;
+        }
+        emptyMsg.style.display = 'none';
+
+        // Сортировка: сначала невыполненные, потом выполненные; внутри — по приоритету
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        const sorted = [...tasks].sort((a, b) => {
+            if (a.done !== b.done) return a.done ? 1 : -1;
+            return (priorityOrder[a.priority] || 1) - (priorityOrder[b.priority] || 1);
+        });
+
+        sorted.forEach(task => {
+            const li = document.createElement('li');
+            li.className = 'task-item' + (task.done ? ' done' : '');
+
+            // Левая часть
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'task-left';
+
+            // Чекбокс
+            const check = document.createElement('input');
+            check.type = 'checkbox';
+            check.className = 'task-check';
+            check.checked = task.done;
+            check.addEventListener('change', () => {
+                task.done = check.checked;
+                renderAll();
+            });
+
+            // Текст задачи
+            const textSpan = document.createElement('span');
+            textSpan.className = 'task-text';
+            textSpan.textContent = task.text;
+
+            // Бейдж приоритета
+            const badge = document.createElement('span');
+            badge.className = `priority-badge priority-${task.priority}`;
+            const labels = { high: 'Высокий', medium: 'Средний', low: 'Низкий' };
+            badge.textContent = labels[task.priority] || 'Средний';
+
+            leftDiv.appendChild(check);
+            leftDiv.appendChild(textSpan);
+            leftDiv.appendChild(badge);
+
+            // Кнопки действий
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'task-actions';
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn btn-danger btn-sm';
+            delBtn.textContent = '🗑';
+            delBtn.title = 'Удалить задачу';
+            delBtn.addEventListener('click', () => {
+                if (!confirm(`Удалить задачу "${task.text}"?`)) return;
+                const proj = getCurrentProject();
+                if (!proj) return;
+                proj.tasks = proj.tasks.filter(t => t.id !== task.id);
+                renderAll();
+            });
+
+            actionsDiv.appendChild(delBtn);
+            li.appendChild(leftDiv);
+            li.appendChild(actionsDiv);
+            container.appendChild(li);
+        });
+    }
+
+    // --- Рендеринг статистики ---
+    function renderStats() {
+        let total = 0, done = 0;
+        state.projects.forEach(p => {
+            total += p.tasks.length;
+            done += p.tasks.filter(t => t.done).length;
+        });
+
+        document.getElementById('statProjects').textContent = state.projects.length;
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statDone').textContent = done;
+        document.getElementById('statActive').textContent = total - done;
+    }
+
+    // --- Обновление заголовка текущего проекта ---
+    function updateProjectTitle() {
+        const proj = getCurrentProject();
+        const titleEl = document.getElementById('currentProjectTitle');
+
+        if (proj) {
+            titleEl.textContent = '';
+            titleEl.appendChild(document.createTextNode('Задачи '));
+
+            const span = document.createElement('span');
+            span.className = 'project-name';
+            span.textContent = '— ' + proj.name;
+            titleEl.appendChild(span);
+        } else {
+            titleEl.textContent = '';
+            titleEl.appendChild(document.createTextNode('Задачи '));
+
+            const span = document.createElement('span');
+            span.className = 'project-name';
+            span.textContent = '— выберите проект';
+            titleEl.appendChild(span);
+        }
+    }
+
+    // ================================================================
+    //  ДОБАВЛЕНИЕ ПРОЕКТА / ЗАДАЧИ
+    // ================================================================
+
+    // --- Добавить проект ---
+    document.getElementById('addProjectBtn').addEventListener('click', () => {
+        const input = document.getElementById('projectInput');
+        const name = input.value.trim();
+
+        if (!name) {
+            alert('Введите название проекта.');
+            return;
+        }
+
+        // Проверка на дубликат
+        if (state.projects.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+            alert('Проект с таким названием уже существует.');
+            return;
+        }
+
+        const newProj = {
+            id: generateId(),
+            name: name,
+            tasks: []
+        };
+
+        state.projects.push(newProj);
+        state.currentProjectId = newProj.id;
+        input.value = '';
+        renderAll();
+    });
+
+    // --- Добавить задачу ---
+    function addTask() {
+        const input = document.getElementById('taskInput');
+        const text = input.value.trim();
+
+        if (!text) {
+            alert('Введите текст задачи.');
+            return;
+        }
+
+        const proj = getCurrentProject();
+        if (!proj) {
+            alert('Сначала выберите проект.');
+            return;
+        }
+
+        const priority = document.getElementById('prioritySelect').value;
+
+        proj.tasks.push({
+            id: generateId(),
+            text: text,
+            done: false,
+            priority: priority
+        });
+
+        input.value = '';
+        renderAll();
+    }
+
+    document.getElementById('addTaskBtn').addEventListener('click', addTask);
+
+    // Enter в поле задачи
+    document.getElementById('taskInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') addTask();
+    });
+
+    // Enter в поле проекта
+    document.getElementById('projectInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('addProjectBtn').click();
+    });
+
+    // ================================================================
+    //  ЭКСПОРТ / ИМПОРТ
+    // ================================================================
+
+    // --- Экспорт в JSON ---
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        const dataStr = JSON.stringify(state, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        const date = new Date().toISOString().slice(0, 10);
+        a.download = `pm_backup_${date}.json`;
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // --- Импорт из JSON ---
+    const fileInput = document.getElementById('fileInput');
+
+    document.getElementById('importBtn').addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = (ev) => {
+            try {
+                const imported = JSON.parse(ev.target.result);
+
+                // Валидация структуры
+                if (!imported.projects || !Array.isArray(imported.projects)) {
+                    alert('Некорректный файл: отсутствует массив projects.');
+                    return;
+                }
+
+                // Нормализация
+                imported.projects.forEach(p => {
+                    if (!p.tasks || !Array.isArray(p.tasks)) p.tasks = [];
+                    if (!p.id) p.id = generateId();
+                    if (typeof p.name !== 'string') p.name = String(p.name || 'Без названия');
+
+                    p.tasks.forEach(t => {
+                        if (typeof t.done !== 'boolean') t.done = false;
+                        if (!['high', 'medium', 'low'].includes(t.priority)) t.priority = 'medium';
+                        if (!t.id) t.id = generateId();
+                        if (typeof t.text !== 'string') t.text = String(t.text || '');
+                    });
+                });
+
+                // Коррекция currentProjectId
+                if (!imported.currentProjectId || !imported.projects.some(p => p.id === imported.currentProjectId)) {
+                    if (imported.projects.length > 0) {
+                        imported.currentProjectId = imported.projects[0].id;
+                    } else {
+                        imported.currentProjectId = null;
+                    }
+                }
+
+                state = imported;
+                renderAll();
+                alert('Данные успешно импортированы.');
+            } catch (err) {
+                alert('Ошибка при импорте: ' + err.message);
+            }
+        };
+
+        reader.readAsText(file);
+        fileInput.value = ''; // сброс для повторного выбора того же файла
+    });
+
+    // ================================================================
+    //  ЗАПУСК ПРИЛОЖЕНИЯ
+    // ================================================================
+
+    renderAll();
+
+    // Дополнительное сохранение при закрытии страницы
+    window.addEventListener('beforeunload', () => {
+        saveState();
+    });
+</script>
+</body>
+</html>
